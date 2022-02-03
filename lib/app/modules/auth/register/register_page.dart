@@ -1,13 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_utils/src/extensions/context_extensions.dart';
+import 'package:vakinha_burger_mobile/app/core/ui/vakinha_state.dart';
 import 'package:vakinha_burger_mobile/app/core/ui/widgets/vakinha_TextFormField.dart';
 import 'package:vakinha_burger_mobile/app/core/ui/widgets/vakinha_appbar.dart';
 import 'package:vakinha_burger_mobile/app/core/ui/widgets/vakinha_button.dart';
 import 'package:vakinha_burger_mobile/app/modules/auth/register/register_controller.dart';
+import 'package:validatorless/validatorless.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState
+    extends VakinhaState<RegisterPage, RegisterController> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameEC = TextEditingController();
+  final _emailEC = TextEditingController();
+  final _passwordEC = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameEC.dispose();
+    _emailEC.dispose();
+    _passwordEC.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +41,7 @@ class RegisterPage extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Form(
+              key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -38,29 +59,72 @@ class RegisterPage extends StatelessWidget {
                   const SizedBox(
                     height: 30,
                   ),
-                  const VakinhaTextFormField(label: 'Nome'),
+                  VakinhaTextFormField(
+                    label: 'Nome',
+                    controller: _nameEC,
+                    validator: Validatorless.required(
+                      'Nome é obrigatório',
+                    ),
+                  ),
                   const SizedBox(
                     height: 30,
                   ),
-                  const VakinhaTextFormField(label: 'E-mail'),
+                  VakinhaTextFormField(
+                    label: 'E-mail',
+                    controller: _emailEC,
+                    validator: Validatorless.multiple([
+                      Validatorless.required('Email é obrigatório'),
+                      Validatorless.email('Email inválido'),
+                    ]),
+                  ),
                   const SizedBox(
                     height: 30,
                   ),
-                  const VakinhaTextFormField(label: 'Senha'),
+                  VakinhaTextFormField(
+                    label: 'Senha',
+                    obscureText: true,
+                    controller: _passwordEC,
+                    validator: Validatorless.multiple([
+                      Validatorless.required('Senha é obrigatória'),
+                      Validatorless.min(
+                        6,
+                        'Senha deve ter no mínimo 6 caracteres',
+                      ),
+                    ]),
+                  ),
                   const SizedBox(
                     height: 30,
                   ),
-                  const VakinhaTextFormField(label: 'Confirma a senha'),
+                  VakinhaTextFormField(
+                    label: 'Confirma a senha',
+                    obscureText: true,
+                    validator: Validatorless.multiple([
+                      Validatorless.required('Confirmar a senha é obrigatória'),
+                      Validatorless.compare(
+                        _passwordEC,
+                        'Senhas não conferem',
+                      ),
+                    ]),
+                  ),
                   const SizedBox(
                     height: 50,
                   ),
                   Center(
                     child: VakinhaButton(
-                        width: context.width,
-                        label: 'CADASTRAR',
-                        onPressed: () {
-                          Get.find<RegisterController>().toogleLoader();
-                        }),
+                      width: context.width,
+                      label: 'CADASTRAR',
+                      onPressed: () {
+                        final formValid =
+                            _formKey.currentState?.validate() ?? false;
+                        if (formValid) {
+                          controller.register(
+                            name: _nameEC.text,
+                            email: _emailEC.text,
+                            password: _passwordEC.text,
+                          );
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),
