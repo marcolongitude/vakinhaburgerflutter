@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import 'auth_routers.dart';
+import 'home_routers.dart';
 import 'splash_routers.dart';
 
 class VakinhaRouter {
@@ -8,6 +9,7 @@ class VakinhaRouter {
     return [
       ...SplashRouters.routers,
       ...AuthRouters.routers,
+      ...HomeRouters.routers,
     ];
   }
 }
